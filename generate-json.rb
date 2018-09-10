@@ -5,15 +5,18 @@ hash = JSON.load(File.read("German_Sign_Language/German_Sign_Language.json"))
 
 hash["notes"] = []
 
-IO.readlines("entries").each do |line|
-    video, meaning, note = line.chomp.split("\t")
+entries = IO.readlines("entries").map do |line|
+    line.chomp.split("\t", -1)
+end
 
-    video.gsub!("entry", "embed")
-    video = "https://signdict.org"+video
+entries = entries.group_by{|e| e[1]}.map{|meaning, e| [e[0][1], e[0][2], e.map{|e2| "https://signdict.org"+e2[0].gsub("entry", "embed")}] }
 
-    note = "" if note.nil?
+entries.each do |e|
+    meaning, note, videos = e
 
-    recording_id = video.scan(/video\/(\d+)/)[0][0]
+    while videos.size < 6
+        videos << ""
+    end
 
     entry = {
         "__type__" => "Note",
@@ -21,14 +24,12 @@ IO.readlines("entries").each do |line|
         "fields" => [
             meaning,
             note,
-            video
-        ],
+        ]+videos,
         "flags" => 0,
-        "guid" => Digest::SHA1.hexdigest(recording_id)[8..16],
+        "guid" => Digest::SHA1.hexdigest(meaning+note)[8..16],
         "note_model_uuid" => "1c00f1a4-b468-11e8-9e8e-448500519c3a",
         "tags" => []
     }
-
 
     hash["notes"] << entry
 end
