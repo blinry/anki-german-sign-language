@@ -3,7 +3,7 @@ require "nokogiri"
 
 new_entries = []
 
-("A".."Z").to_a.each do |letter|
+(("A".."Z").to_a + ["0-9"]).each do |letter|
     1.upto(100) do |page|
         uri = "https://signdict.org/entry?letter=#{letter}&page=#{page}"
         open(uri) do |page|
