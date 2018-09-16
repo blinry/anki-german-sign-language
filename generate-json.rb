@@ -1,6 +1,9 @@
 require "json"
 require "digest"
 
+# These videos contain a baked-in text with their meaning. This text will be covered up in Anki.
+containtext = IO.readlines("containtext").map{|line| line.split(" ").first}
+
 hash = JSON.load(File.read("German_Sign_Language/German_Sign_Language.json"))
 
 hash["notes"] = []
@@ -18,15 +21,17 @@ entries.each do |e|
         videos << ""
     end
 
+    ct = videos.map{|v| containtext.include?(v.split("/").last) ? "yes" : ""}
+
     entry = {
         "__type__" => "Note",
         "data" => "",
         "fields" => [
             meaning,
             note,
-        ]+videos,
+        ]+videos+ct,
         "flags" => 0,
-        "guid" => Digest::SHA1.hexdigest(meaning+note)[8..16],
+        "guid" => Digest::SHA1.hexdigest(meaning+note)[8..17],
         "note_model_uuid" => "1c00f1a4-b468-11e8-9e8e-448500519c3a",
         "tags" => []
     }
